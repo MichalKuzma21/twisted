@@ -54,7 +54,7 @@ else:
 STATIC_PACKAGE_METADATA = dict(
     name="Twisted",
     description="An asynchronous networking framework written in Python",
-    author="Twisted Matrix Laboratories",
+    author="Twisted Matrix Laboratories & FlakM",
     author_email="twisted-python@twistedmatrix.com",
     maintainer="Glyph Lefkowitz",
     maintainer_email="glyph@twistedmatrix.com",
