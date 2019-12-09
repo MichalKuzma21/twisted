@@ -1440,9 +1440,13 @@ def _parseSSL(
             nativeString(FilePath(extraCertChain).getContent()),
             flags=re.DOTALL,
         )
-        chainCertificates = [
-            ssl.Certificate.loadPEM(chainCertPEM).original for chainCertPEM in matches
-        ]
+        chainCertificates = [ssl.Certificate.loadPEM(chainCertPEM).original
+                             for chainCertPEM in matches]
+
+        trustCertificates = [ssl.Certificate.loadPEM(chainCertPEM)
+                             for chainCertPEM in matches]
+        trustRoot = trustRootFromCertificates(trustCertificates)
+
         if not chainCertificates:
             raise ValueError(
                 "Specified chain file '%s' doesn't contain any valid "
@@ -1450,17 +1454,22 @@ def _parseSSL(
             )
     else:
         chainCertificates = None
+        trustRoot = None
     if dhParameters is not None:
         dhParameters = ssl.DiffieHellmanParameters.fromFile(
             FilePath(dhParameters),
         )
+    
+    from twisted.internet._sslverify import TLSVersion
 
     cf = ssl.CertificateOptions(
         privateKey=privateCertificate.privateKey.original,
         certificate=privateCertificate.original,
         extraCertChain=chainCertificates,
         dhParameters=dhParameters,
-        **kw,
+        trustRoot=trustRoot,
+        raiseMinimumTo=TLSVersion.TLSv1_1,
+        **kw
     )
     return ((int(port), factory, cf), {"interface": interface, "backlog": int(backlog)})
 
