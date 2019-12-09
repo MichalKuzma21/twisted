@@ -1392,6 +1392,11 @@ def _parseSSL(factory, port, privateKey="server.pem", certKey=None,
         )
         chainCertificates = [ssl.Certificate.loadPEM(chainCertPEM).original
                              for chainCertPEM in matches]
+
+        trustCertificates = [ssl.Certificate.loadPEM(chainCertPEM)
+                             for chainCertPEM in matches]
+        trustRoot = trustRootFromCertificates(trustCertificates)
+
         if not chainCertificates:
             raise ValueError(
                 "Specified chain file '%s' doesn't contain any valid "
@@ -1399,6 +1404,7 @@ def _parseSSL(factory, port, privateKey="server.pem", certKey=None,
             )
     else:
         chainCertificates = None
+        trustRoot = None
     if dhParameters is not None:
         dhParameters = ssl.DiffieHellmanParameters.fromFile(
             FilePath(dhParameters),
@@ -1409,6 +1415,7 @@ def _parseSSL(factory, port, privateKey="server.pem", certKey=None,
         certificate=privateCertificate.original,
         extraCertChain=chainCertificates,
         dhParameters=dhParameters,
+        trustRoot=trustRoot,
         **kw
     )
     return ((int(port), factory, cf),
